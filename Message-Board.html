@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+	 *{padding: 0;margin:0;}
+	  .container{position:absolute;top:50%;left:50%;height:500px;width:400px;margin-left: -200px;margin-top:-250px;}
+	  .titl{background-color:skyblue}
+	  #msg{margin:20px 0;list-style: none;}
+		span{margin:20px;}
+		h3{margin:20px 0;}
+		li span{display:inline-block;background: red;margin:5px  0px;}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="titl"><span> 雨夜清荷</span><span>等级0 </span><span> 消息 <em id='msg_num'>0</em></span></div>
+		<h3>
+			最新发布消息
+		</h3>
+		<ul id="msg">
+			
+		</ul>
+		<form action="">
+			<textarea name="" id="user_input" cols="30" rows="10"></textarea>
+			<button type="button" id="user_submit">Click Me!</button>
+		</form>
+	</div>
+</body>
+<script>
+	var Observer=(function(){
+		var _message={};
+		return {
+			regist:function(type,fn){
+				if(typeof _message[type]=='undefined'){
+					_message[type]=[fn];
+                   
+				}else{
+
+					_message[type].push(fn);
+				}
+ 
+			},
+			fire:function(type,args){
+				if(!_message[type]){
+					return ;
+				}
+				var events={
+					type:type,
+					args:args||{}
+				},i=0,len=_message[type].length;
+				
+				for(i;i<len;i++){
+
+					_message[type][i].call(this,events);
+				}
+			},
+			remove:function(type,fn){
+				if(_message[type] instanceof Array){
+					var i=_message[type].length-1;
+					for(;i>=0;i--){
+						_message[type][i]===fn&&_message[type].splice(i,1);
+					}
+				}
+			}
+		}
+	})();
+
+ //  Observer.regist('test',function(e){
+ //  	      console.log(e.type,e.args.msg);
+ //  });
+ // Observer.regist('test',function(e){
+ //  	      console.log(e.type);
+ //  });
+ //  Observer.regist('test',function(){
+ //  	      alert(1)
+ //  });
+ //  Observer.fire('test',{msg:'参数'})
+
+ function $(id){
+ 	return document.getElementById(id);
+ }
+
+ 
+
+
+ //A
+ (function(){
+ 	function addMsgItem(e){
+ 		var text=e.args.text,ul=$('msg'),li=document.createElement('li'),span=document.createElement('span');
+ 		ul.appendChild(li);
+ 		li.innerHTML=text;
+        span.innerHTML='删除';
+ 		li.appendChild(span);
+ 		//关闭按钮
+ 		span.onclick=function(){
+ 			ul.removeChild(li);
+ 			//发布删除留言消息
+ 			Observer.fire('removeCommentMessage',{
+ 				num:-1
+ 			});
+ 		}
+ 		//添加删除按钮
+ 		li.appendChild(span);
+ 		// //添加留言节点
+ 		ul.appendChild(li);
+ 		}
+        Observer.regist('addCommentMessage',addMsgItem);
+ 	
+ })();
+ //B
+ (function(){
+  //更改用户组的消息数目
+	   function changeMsagNum(e){
+	   	//获取需要增加的用户消息数目
+	   	var num=e.args.num;
+        //增加用户消息数目并写入页面中
+        $('msg_num').innerHTML=parseInt($('msg_num').innerHTML)+num; 
+	   }
+	    Observer.regist('addCommentMessage',changeMsagNum);
+	    Observer.regist('removeCommentMessage',changeMsagNum);
+ })();
+ //C
+ (function(){
+ 	$('user_submit').onclick=function(){
+ 		var text=$('user_input');
+ 		if(text.value==''){
+ 			return ;
+ 		}
+ 		Observer.fire('addCommentMessage',{
+ 			text:text.value,
+ 			num:1
+ 		});
+ 		
+ 		text.value='';
+ 	}
+ })()
+
+</script>
+</html>
